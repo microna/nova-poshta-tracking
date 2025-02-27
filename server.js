@@ -34,6 +34,8 @@ app.all("/api/*", async (req, res) => {
     const endpoint = req.url.replace("/api", "");
     const url = `${AFTERSHIP_API_BASE_URL}${endpoint}`;
 
+    console.log(`Forwarding request to: ${url}`);
+
     // Forward the request to AfterShip API
     const response = await axios({
       method: req.method,
@@ -51,8 +53,11 @@ app.all("/api/*", async (req, res) => {
   } catch (error) {
     console.error("Proxy error:", error.message);
 
-    // Handle error responses from AfterShip API
+    // Log more detailed error information
     if (error.response) {
+      console.error("Response status:", error.response.status);
+      console.error("Response headers:", error.response.headers);
+      console.error("Response data:", error.response.data);
       return res.status(error.response.status).json(error.response.data);
     }
 
