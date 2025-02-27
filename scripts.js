@@ -74,8 +74,8 @@ async function makeApiRequest(endpoint, method = "GET", data = null) {
       options.body = JSON.stringify(data);
     }
 
-    // Use our proxy server with proper URL encoding
-    const proxyUrl = "https://nova-poshta-tracking.onrender.com";
+    // Add the /api prefix to match the server's route configuration
+    const proxyUrl = "https://nova-poshta-tracking.onrender.com/api";
 
     // Make sure endpoint starts with a slash if it doesn't already
     if (!endpoint.startsWith("/")) {
