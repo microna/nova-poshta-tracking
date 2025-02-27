@@ -534,7 +534,7 @@
           }
 
           // Use our proxy server instead of calling AfterShip API directly
-          const proxyUrl = "http://localhost:3000/api";
+          const proxyUrl = "https://nova-poshta-tracking.onrender.com";
           const response = await fetch(`${proxyUrl}${endpoint}`, options);
           const result = await response.json();
 
