@@ -1,117 +1,338 @@
-// AfterShip Tracking API Client
-const axios = require('axios');
+  // Tab switching functionality
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      // Remove active class from all tabs
+      document
+        .querySelectorAll(".tab")
+        .forEach((t) => t.classList.remove("active"));
+      document
+        .querySelectorAll(".tab-content")
+        .forEach((t) => t.classList.remove("active"));
 
-class AfterShipClient {
-  constructor(apiKey) {
-    this.apiKey = apiKey;
-    this.baseUrl = 'https://api.aftership.com/tracking/2025-01';
-    this.client = axios.create({
-      baseURL: this.baseUrl,
-      headers: {
-        'Content-Type': 'application/json',
-        'as-api-key': 'asat_85fad0de3fb24d02bcffdf4c880419a2'
-      }
+      // Add active class to clicked tab
+      tab.classList.add("active");
+      document.getElementById(tab.dataset.tab).classList.add("active");
     });
+  });
+
+  // Advanced options toggle
+  document.getElementById("show-advanced").addEventListener("click", () => {
+    const advancedOptions = document.getElementById("advanced-options");
+    if (advancedOptions.classList.contains("hidden")) {
+      advancedOptions.classList.remove("hidden");
+      document.getElementById("show-advanced").textContent =
+        "Hide Advanced Options";
+    } else {
+      advancedOptions.classList.add("hidden");
+      document.getElementById("show-advanced").textContent =
+        "Show Advanced Options";
+    }
+  });
+
+  // API handling functions
+  let currentCursor = null;
+  let currentPage = 1;
+
+  function formatDateTime(isoString) {
+    if (!isoString) return "N/A";
+    const date = new Date(isoString);
+    return date.toLocaleString();
   }
 
-  /**
-   * Get tracking information for a specific tracking number
-   * @param {string} trackingNumber - The tracking number to query
-   * @param {string} [courier] - Optional courier slug
-   * @returns {Promise} - Promise containing tracking data
-   */
-  async getTracking(trackingNumber, courier = null) {
+  function getStatusClass(tag) {
+    switch (tag) {
+      case "Delivered":
+        return "status-delivered";
+      case "InTransit":
+      case "OutForDelivery":
+        return "status-transit";
+      case "Exception":
+      case "AttemptFail":
+        return "status-exception";
+      default:
+        return "status-pending";
+    }
+  }
+
+  async function makeApiRequest(endpoint, method = "GET", data = null) {
+    const apiKey = document.getElementById("apiKey").value;
+    if (!apiKey) {
+      alert("Please enter your AfterShip API key");
+      return null;
+    }
+
     try {
+      const options = {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "as-api-key": apiKey,
+        },
+      };
+
+      if (data) {
+        options.body = JSON.stringify(data);
+      }
+
+      // Use our proxy server instead of calling AfterShip API directly
+      const proxyUrl = "https://nova-poshta-tracking.onrender.com";
+      const response = await fetch(`${proxyUrl}${endpoint}`, options);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.meta?.message || "API request failed");
+      }
+
+      return result;
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+      console.error("API Error:", error);
+      return null;
+    }
+  }
+
+  // Single tracking form
+  document
+    .getElementById("single-tracking-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const trackingNumber =
+        document.getElementById("tracking-number").value;
+      const courier = document.getElementById("courier").value;
+
       let endpoint = `/trackings/${trackingNumber}`;
       if (courier) {
         endpoint = `/trackings/${courier}/${trackingNumber}`;
       }
-      
-      const response = await this.client.get(endpoint);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching tracking info:', error.response?.data || error.message);
-      throw error;
+
+      const result = await makeApiRequest(endpoint);
+      if (!result) return;
+
+      const resultElement = document.getElementById("single-result");
+      resultElement.classList.remove("hidden");
+
+      const tracking = result.data.tracking;
+      let html = `
+            <div class="tracking-item">
+                <div class="tracking-title">${
+                  tracking.tracking_number
+                }</div>
+                <div class="tracking-info">
+                    <div class="tracking-detail"><strong>Courier:</strong> ${
+                      tracking.slug
+                    }</div>
+                    <div class="tracking-detail"><strong>Last Updated:</strong> ${formatDateTime(
+                      tracking.updated_at
+                    )}</div>
+                    <div class="tracking-detail"><strong>Created:</strong> ${formatDateTime(
+                      tracking.created_at
+                    )}</div>
+                </div>
+                <div class="tracking-status ${getStatusClass(
+                  tracking.tag
+                )}">${tracking.tag}</div>
+                
+                <h3>Tracking History</h3>
+        `;
+
+      if (tracking.checkpoints && tracking.checkpoints.length > 0) {
+        tracking.checkpoints.forEach((checkpoint) => {
+          html += `
+                    <div class="checkpoint">
+                        <div class="checkpoint-date">${formatDateTime(
+                          checkpoint.checkpoint_time
+                        )}</div>
+                        <div>${checkpoint.message}</div>
+                        <div><strong>Location:</strong> ${
+                          checkpoint.location || "N/A"
+                        }</div>
+                    </div>
+                `;
+        });
+      } else {
+        html += "<p>No tracking history available yet.</p>";
+      }
+
+      html += "</div>";
+      resultElement.innerHTML = html;
+    });
+
+  // Multiple tracking form
+  document
+    .getElementById("multiple-tracking-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      currentCursor = null;
+      currentPage = 1;
+      await fetchMultipleTrackings();
+    });
+
+  async function fetchMultipleTrackings() {
+    const trackingNumbers =
+      document.getElementById("tracking-numbers").value;
+    const limit = document.getElementById("limit").value;
+    const tag = document.getElementById("tag").value;
+    const origin = document.getElementById("origin").value;
+    const destination = document.getElementById("destination").value;
+    const courierFilter = document.getElementById("courier-filter").value;
+    const createdAfter = document.getElementById("created-after").value;
+    const createdBefore = document.getElementById("created-before").value;
+    const keyword = document.getElementById("keyword").value;
+
+    // Fields to include
+    const fields = [];
+    document
+      .querySelectorAll('input[type="checkbox"]:checked')
+      .forEach((checkbox) => {
+        fields.push(checkbox.value);
+      });
+
+    // Build query parameters
+    let queryParams = `?limit=${limit}`;
+    if (trackingNumbers)
+      queryParams += `&tracking_numbers=${trackingNumbers}`;
+    if (tag) queryParams += `&tag=${tag}`;
+    if (origin) queryParams += `&origin=${origin}`;
+    if (destination) queryParams += `&destination=${destination}`;
+    if (courierFilter) queryParams += `&slug=${courierFilter}`;
+    if (fields.length > 0) queryParams += `&fields=${fields.join(",")}`;
+    if (keyword) queryParams += `&keyword=${encodeURIComponent(keyword)}`;
+    if (currentCursor) queryParams += `&cursor=${currentCursor}`;
+
+    // Format dates
+    if (createdAfter) {
+      const date = new Date(createdAfter);
+      queryParams += `&created_at_min=${encodeURIComponent(
+        date.toISOString()
+      )}`;
+    }
+    if (createdBefore) {
+      const date = new Date(createdBefore);
+      queryParams += `&created_at_max=${encodeURIComponent(
+        date.toISOString()
+      )}`;
+    }
+
+    const result = await makeApiRequest(`/trackings${queryParams}`);
+    if (!result) return;
+
+    const resultElement = document.getElementById("multiple-result");
+    resultElement.classList.remove("hidden");
+
+    const trackingsElement = document.getElementById("trackings-list");
+    let html = "";
+
+    if (result.data.trackings.length === 0) {
+      html = "<p>No trackings found matching your criteria.</p>";
+    } else {
+      result.data.trackings.forEach((tracking) => {
+        html += `
+                    <div class="tracking-item">
+                        <div class="tracking-title">${
+                          tracking.tracking_number
+                        }</div>
+                        <div class="tracking-info">
+                            <div class="tracking-detail"><strong>Courier:</strong> ${
+                              tracking.slug
+                            }</div>
+                            <div class="tracking-detail"><strong>Last Updated:</strong> ${formatDateTime(
+                              tracking.updated_at
+                            )}</div>
+                            <div class="tracking-status ${getStatusClass(
+                              tracking.tag
+                            )}">${tracking.tag}</div>
+                        </div>
+                    </div>
+                `;
+      });
+    }
+
+    trackingsElement.innerHTML = html;
+
+    // Update pagination
+    document.getElementById(
+      "page-info"
+    ).textContent = `Page ${currentPage}`;
+    document.getElementById("prev-page").disabled = currentPage === 1;
+    document.getElementById("next-page").disabled =
+      !result.data.pagination?.next_cursor;
+
+    // Save cursor for next page
+    if (result.data.pagination) {
+      currentCursor = result.data.pagination.next_cursor;
     }
   }
 
-  /**
-   * Get all trackings with optional filtering
-   * @param {Object} params - Query parameters for filtering
-   * @returns {Promise} - Promise containing trackings data
-   */
-  async getTrackings(params = {}) {
-    try {
-      const response = await this.client.get('/trackings', { params });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching trackings:', error.response?.data || error.message);
-      throw error;
+  // Pagination handlers
+  document.getElementById("prev-page").addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      currentCursor = null; // Reset cursor to fetch from the beginning
+      fetchMultipleTrackings();
     }
-  }
+  });
 
-  /**
-   * Create a new tracking
-   * @param {string} trackingNumber - The tracking number
-   * @param {string} courier - The courier slug
-   * @param {Object} additionalData - Additional tracking data
-   * @returns {Promise} - Promise containing created tracking data
-   */
-  async createTracking(trackingNumber, courier, additionalData = {}) {
-    try {
+  document.getElementById("next-page").addEventListener("click", () => {
+    currentPage++;
+    fetchMultipleTrackings();
+  });
+
+  // Create tracking form
+  document
+    .getElementById("create-tracking-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const trackingNumber = document.getElementById(
+        "new-tracking-number"
+      ).value;
+      const courier = document.getElementById("new-courier").value;
+      const title = document.getElementById("title").value;
+      const orderId = document.getElementById("order-id").value;
+      const customerName = document.getElementById("customer-name").value;
+      const originCountry = document.getElementById("origin-country").value;
+      const destinationCountry = document.getElementById(
+        "destination-country"
+      ).value;
+
       const payload = {
         tracking: {
           tracking_number: trackingNumber,
           slug: courier,
-          ...additionalData
-        }
+        },
       };
-      
-      const response = await this.client.post('/trackings', payload);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating tracking:', error.response?.data || error.message);
-      throw error;
-    }
-  }
-}
 
-// Example usage
-async function main() {
-  // Replace with your actual API key
-  const apiKey = 'asat_85fad0de3fb24d02bcffdf4c880419a2';
-  const client = new AfterShipClient(apiKey);
-  
-  try {
-    // Example 1: Get tracking info for a specific tracking number
-    const trackingInfo = await client.getTracking('jh865r66gc6hi');
-    console.log('Tracking Info:', JSON.stringify(trackingInfo, null, 2));
-    
-    // Example 2: Get all trackings with limit and page
-    const allTrackings = await client.getTrackings({ 
-      limit: 10,
-      page: 1 
-    });
-    console.log('All Trackings:', JSON.stringify(allTrackings, null, 2));
-    
-    // Example 3: Create a new tracking
-    const newTracking = await client.createTracking(
-      'new_tracking_number',
-      'fedex',
-      {
-        title: 'My Package',
-        customer_name: 'John Doe',
-        destination_country_iso3: 'USA'
+      if (title) payload.tracking.title = title;
+      if (orderId) payload.tracking.order_id = orderId;
+      if (customerName) {
+        payload.tracking.customer_name = customerName;
       }
-    );
-    console.log('New Tracking:', JSON.stringify(newTracking, null, 2));
-    
-  } catch (error) {
-    console.error('Operation failed:', error);
-  }
-}
+      if (originCountry)
+        payload.tracking.origin_country_iso3 = originCountry;
+      if (destinationCountry)
+        payload.tracking.destination_country_iso3 = destinationCountry;
 
-// Uncomment to run the example
-main();
+      const result = await makeApiRequest("/trackings", "POST", payload);
+      if (!result) return;
 
-module.exports = AfterShipClient;
+      const resultElement = document.getElementById("create-result");
+      resultElement.classList.remove("hidden");
+      resultElement.innerHTML = `
+            <div class="tracking-item">
+                <h3>Tracking Created Successfully</h3>
+                <div class="tracking-info">
+                    <div class="tracking-detail"><strong>Tracking Number:</strong> ${
+                      result.data.tracking.tracking_number
+                    }</div>
+                    <div class="tracking-detail"><strong>Courier:</strong> ${
+                      result.data.tracking.slug
+                    }</div>
+                    <div class="tracking-detail"><strong>Created At:</strong> ${formatDateTime(
+                      result.data.tracking.created_at
+                    )}</div>
+                </div>
+            </div>
+        `;
+    });
