@@ -1,281 +1,719 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parcel Tracking System</title>
-  </head>
-  <body>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 1px solid #fff;
+            margin-bottom: -1px;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .form-row {
+            margin-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .checkbox-item {
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+        .checkbox-item input {
+            width: auto;
+            margin-right: 5px;
+        }
+        .result-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .tracking-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: white;
+        }
+        .tracking-title {
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+        .tracking-info {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .tracking-detail {
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+        .tracking-status {
+            margin-top: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            display: inline-block;
+            font-weight: bold;
+        }
+        .status-delivered {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .status-transit {
+            background-color: #f39c12;
+            color: white;
+        }
+        .status-exception {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .status-pending {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .advanced-options {
+            border-top: 1px solid #ddd;
+            margin-top: 15px;
+            padding-top: 15px;
+        }
+        .advanced-toggle {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            padding: 0;
+            font-size: 14px;
+            text-decoration: underline;
+        }
+        .hidden {
+            display: none;
+        }
+        .checkpoint {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #ddd;
+        }
+        .checkpoint-date {
+            font-weight: bold;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            margin: 0 5px;
+        }
+        .api-key-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 4px;
+        }
+        .status-bar {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
     <div class="container">
-      <h1>Parcel Tracking System</h1>
-      <div class="api-key-section">
-        <label for="apiKey">AfterShip API Key:</label>
-        <input
-          type="text"
-          id="apiKey"
-          placeholder="Enter your AfterShip API key"
-        />
-      </div>
-
-      <div class="tabs">
-        <div class="tab active" data-tab="single-tracking">
-          Track Single Package
+        <h1>Parcel Tracking System</h1>
+        <div class="api-key-section">
+            <label for="apiKey">AfterShip API Key:</label>
+            <input type="text" id="apiKey" placeholder="Enter your AfterShip API key">
         </div>
-        <div class="tab" data-tab="multiple-tracking">
-          Track Multiple Packages
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="single-tracking">Track Single Package</div>
+            <div class="tab" data-tab="multiple-tracking">Track Multiple Packages</div>
+            <div class="tab" data-tab="create-tracking">Create New Tracking</div>
         </div>
-        <div class="tab" data-tab="create-tracking">Create New Tracking</div>
-      </div>
-
-      <!-- Single Tracking Tab -->
-      <div class="tab-content active" id="single-tracking">
-        <h2>Track a Single Package</h2>
-        <form id="single-tracking-form">
-          <div class="form-group">
-            <label for="tracking-number">Tracking Number:</label>
-            <input
-              type="text"
-              id="tracking-number"
-              placeholder="Enter tracking number"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="courier">Courier (Optional):</label>
-            <select id="courier">
-              <option value="">-- Select Courier --</option>
-              <option value="ups">UPS</option>
-              <option value="usps">USPS</option>
-              <option value="fedex">FedEx</option>
-              <option value="dhl">DHL</option>
-              <option value="nova-poshta">Nova Poshta</option>
-              <option value="amazon-logistics">Amazon Logistics</option>
-            </select>
-          </div>
-
-          <button type="submit">Track Package</button>
-        </form>
-
-        <div id="single-result" class="result-container hidden">
-          <!-- Results will be shown here -->
-        </div>
-      </div>
-
-      <!-- Multiple Tracking Tab -->
-      <div class="tab-content" id="multiple-tracking">
-        <h2>Track Multiple Packages</h2>
-        <form id="multiple-tracking-form">
-          <div class="form-group">
-            <label for="tracking-numbers"
-              >Tracking Numbers (separate with commas):</label
-            >
-            <input
-              type="text"
-              id="tracking-numbers"
-              placeholder="Enter tracking numbers separated by commas"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="limit">Results per page:</label>
-            <select id="limit">
-              <option value="10">10</option>
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100" selected>100</option>
-            </select>
-          </div>
-
-          <button type="button" id="show-advanced">
-            Show Advanced Options
-          </button>
-
-          <div id="advanced-options" class="advanced-options hidden">
-            <div class="form-group">
-              <label for="tag">Status:</label>
-              <select id="tag">
-                <option value="">All</option>
-                <option value="Pending">Pending</option>
-                <option value="InfoReceived">Info Received</option>
-                <option value="InTransit">In Transit</option>
-                <option value="OutForDelivery">Out For Delivery</option>
-                <option value="AttemptFail">Attempt Failed</option>
-                <option value="Delivered">Delivered</option>
-                <option value="AvailableForPickup">Available For Pickup</option>
-                <option value="Exception">Exception</option>
-                <option value="Expired">Expired</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="origin">Origin Country:</label>
-              <input
-                type="text"
-                id="origin"
-                placeholder="ISO Alpha-3 code (e.g., USA)"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="destination">Destination Country:</label>
-              <input
-                type="text"
-                id="destination"
-                placeholder="ISO Alpha-3 code (e.g., CAN)"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="courier-filter">Courier Filter:</label>
-              <input
-                type="text"
-                id="courier-filter"
-                placeholder="Courier codes separated by commas"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="created-after">Created After:</label>
-              <input type="datetime-local" id="created-after" />
-            </div>
-
-            <div class="form-group">
-              <label for="created-before">Created Before:</label>
-              <input type="datetime-local" id="created-before" />
-            </div>
-
-            <div class="form-group">
-              <label for="keyword">Keyword Search:</label>
-              <input type="text" id="keyword" placeholder="Search by keyword" />
-            </div>
-
-            <div class="form-group">
-              <label>Fields to Include:</label>
-              <div class="checkbox-group">
-                <div class="checkbox-item">
-                  <input type="checkbox" id="field-title" value="title" />
-                  <label for="field-title">Title</label>
+        
+        <!-- Single Tracking Tab -->
+        <div class="tab-content active" id="single-tracking">
+            <h2>Track a Single Package</h2>
+            <form id="single-tracking-form">
+                <div class="form-group">
+                    <label for="tracking-number">Tracking Number:</label>
+                    <input type="text" id="tracking-number" placeholder="Enter tracking number" required>
                 </div>
-                <div class="checkbox-item">
-                  <input type="checkbox" id="field-order-id" value="order_id" />
-                  <label for="field-order-id">Order ID</label>
+                
+                <div class="form-group">
+                    <label for="courier">Courier (Optional):</label>
+                    <select id="courier">
+                        <option value="">-- Select Courier --</option>
+                        <option value="ups">UPS</option>
+                        <option value="usps">USPS</option>
+                        <option value="fedex">FedEx</option>
+                        <option value="dhl">DHL</option>
+                        <option value="nova-poshta">Nova Poshta</option>
+                        <option value="amazon-logistics">Amazon Logistics</option>
+                    </select>
                 </div>
-                <div class="checkbox-item">
-                  <input type="checkbox" id="field-tag" value="tag" />
-                  <label for="field-tag">Tag</label>
-                </div>
-                <div class="checkbox-item">
-                  <input
-                    type="checkbox"
-                    id="field-checkpoints"
-                    value="checkpoints"
-                  />
-                  <label for="field-checkpoints">Checkpoints</label>
-                </div>
-              </div>
+                
+                <button type="submit">Track Package</button>
+            </form>
+            
+            <div id="single-result" class="result-container hidden">
+                <!-- Results will be shown here -->
             </div>
-          </div>
-
-          <button type="submit" style="margin-top: 15px">
-            Search Trackings
-          </button>
-        </form>
-
-        <div id="multiple-result" class="result-container hidden">
-          <div id="trackings-list">
-            <!-- Tracking results will be shown here -->
-          </div>
-          <div class="pagination">
-            <button id="prev-page" disabled>Previous</button>
-            <span id="page-info">Page 1</span>
-            <button id="next-page">Next</button>
-          </div>
         </div>
-      </div>
-
-      <!-- Create Tracking Tab -->
-      <div class="tab-content" id="create-tracking">
-        <h2>Create New Tracking</h2>
-        <form id="create-tracking-form">
-          <div class="form-group">
-            <label for="new-tracking-number">Tracking Number:</label>
-            <input
-              type="text"
-              id="new-tracking-number"
-              placeholder="Enter tracking number"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="new-courier">Courier:</label>
-            <select id="new-courier" required>
-              <option value="">-- Select Courier --</option>
-              <option value="ups">UPS</option>
-              <option value="usps">USPS</option>
-              <option value="fedex">FedEx</option>
-              <option value="dhl">DHL</option>
-              <option value="nova-poshta">Nova Poshta</option>
-              <option value="amazon-logistics">Amazon Logistics</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="title">Title (Optional):</label>
-            <input
-              type="text"
-              id="title"
-              placeholder="Enter a title for this shipment"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="order-id">Order ID (Optional):</label>
-            <input type="text" id="order-id" placeholder="Enter order ID" />
-          </div>
-
-          <div class="form-group">
-            <label for="customer-name">Customer Name (Optional):</label>
-            <input
-              type="text"
-              id="customer-name"
-              placeholder="Enter customer name"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="origin-country">Origin Country (Optional):</label>
-            <input
-              type="text"
-              id="origin-country"
-              placeholder="ISO Alpha-3 code (e.g., USA)"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="destination-country"
-              >Destination Country (Optional):</label
-            >
-            <input
-              type="text"
-              id="destination-country"
-              placeholder="ISO Alpha-3 code (e.g., CAN)"
-            />
-          </div>
-
-          <button type="submit">Create Tracking</button>
-        </form>
-
-        <div id="create-result" class="result-container hidden">
-          <!-- Create result will be shown here -->
+        
+        <!-- Multiple Tracking Tab -->
+        <div class="tab-content" id="multiple-tracking">
+            <h2>Track Multiple Packages</h2>
+            <form id="multiple-tracking-form">
+                <div class="form-group">
+                    <label for="tracking-numbers">Tracking Numbers (separate with commas):</label>
+                    <input type="text" id="tracking-numbers" placeholder="Enter tracking numbers separated by commas" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="limit">Results per page:</label>
+                    <select id="limit">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100" selected>100</option>
+                    </select>
+                </div>
+                
+                <button type="button" id="show-advanced">Show Advanced Options</button>
+                
+                <div id="advanced-options" class="advanced-options hidden">
+                    <div class="form-group">
+                        <label for="tag">Status:</label>
+                        <select id="tag">
+                            <option value="">All</option>
+                            <option value="Pending">Pending</option>
+                            <option value="InfoReceived">Info Received</option>
+                            <option value="InTransit">In Transit</option>
+                            <option value="OutForDelivery">Out For Delivery</option>
+                            <option value="AttemptFail">Attempt Failed</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="AvailableForPickup">Available For Pickup</option>
+                            <option value="Exception">Exception</option>
+                            <option value="Expired">Expired</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="origin">Origin Country:</label>
+                        <input type="text" id="origin" placeholder="ISO Alpha-3 code (e.g., USA)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="destination">Destination Country:</label>
+                        <input type="text" id="destination" placeholder="ISO Alpha-3 code (e.g., CAN)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="courier-filter">Courier Filter:</label>
+                        <input type="text" id="courier-filter" placeholder="Courier codes separated by commas">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="created-after">Created After:</label>
+                        <input type="datetime-local" id="created-after">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="created-before">Created Before:</label>
+                        <input type="datetime-local" id="created-before">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="keyword">Keyword Search:</label>
+                        <input type="text" id="keyword" placeholder="Search by keyword">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Fields to Include:</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="field-title" value="title">
+                                <label for="field-title">Title</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="field-order-id" value="order_id">
+                                <label for="field-order-id">Order ID</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="field-tag" value="tag">
+                                <label for="field-tag">Tag</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="field-checkpoints" value="checkpoints">
+                                <label for="field-checkpoints">Checkpoints</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" style="margin-top: 15px;">Search Trackings</button>
+            </form>
+            
+            <div id="multiple-result" class="result-container hidden">
+                <div id="trackings-list">
+                    <!-- Tracking results will be shown here -->
+                </div>
+                <div class="pagination">
+                    <button id="prev-page" disabled>Previous</button>
+                    <span id="page-info">Page 1</span>
+                    <button id="next-page">Next</button>
+                </div>
+            </div>
         </div>
-      </div>
+        
+        <!-- Create Tracking Tab -->
+        <div class="tab-content" id="create-tracking">
+            <h2>Create New Tracking</h2>
+            <form id="create-tracking-form">
+                <div class="form-group">
+                    <label for="new-tracking-number">Tracking Number:</label>
+                    <input type="text" id="new-tracking-number" placeholder="Enter tracking number" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="new-courier">Courier:</label>
+                    <select id="new-courier" required>
+                        <option value="">-- Select Courier --</option>
+                        <option value="ups">UPS</option>
+                        <option value="usps">USPS</option>
+                        <option value="fedex">FedEx</option>
+                        <option value="dhl">DHL</option>
+                        <option value="nova-poshta">Nova Poshta</option>
+                        <option value="amazon-logistics">Amazon Logistics</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="title">Title (Optional):</label>
+                    <input type="text" id="title" placeholder="Enter a title for this shipment">
+                </div>
+                
+                <div class="form-group">
+                    <label for="order-id">Order ID (Optional):</label>
+                    <input type="text" id="order-id" placeholder="Enter order ID">
+                </div>
+                
+                <div class="form-group">
+                    <label for="customer-name">Customer Name (Optional):</label>
+                    <input type="text" id="customer-name" placeholder="Enter customer name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="origin-country">Origin Country (Optional):</label>
+                    <input type="text" id="origin-country" placeholder="ISO Alpha-3 code (e.g., USA)">
+                </div>
+                
+                <div class="form-group">
+                    <label for="destination-country">Destination Country (Optional):</label>
+                    <input type="text" id="destination-country" placeholder="ISO Alpha-3 code (e.g., CAN)">
+                </div>
+                
+                <button type="submit">Create Tracking</button>
+            </form>
+            
+            <div id="create-result" class="result-container hidden">
+                <!-- Create result will be shown here -->
+            </div>
+        </div>
+        
+        <div class="status-bar">
+            Using proxy server to avoid CORS issues. Server status: <span id="server-status">Checking...</span>
+        </div>
     </div>
 
-    <script src="scripts.js"></script>
+    <script>
+        // Check server status on load
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/ping', { method: 'HEAD' });
+                if (response.status === 404) {
+                    // Even a 404 means the server is running
+                    document.getElementById('server-status').textContent = 'Connected';
+                    document.getElementById('server-status').style.color = 'green';
+                } else {
+                    document.getElementById('server-status').textContent = 'Connected';
+                    document.getElementById('server-status').style.color = 'green';
+                }
+            } catch (error) {
+                document.getElementById('server-status').textContent = 'Not Connected';
+                document.getElementById('server-status').style.color = 'red';
+                console.error('Server connection error:', error);
+            }
+        });
 
-  </body>
+        // Tab switching functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Advanced options toggle
+        document.getElementById('show-advanced').addEventListener('click', () => {
+            const advancedOptions = document.getElementById('advanced-options');
+            if (advancedOptions.classList.contains('hidden')) {
+                advancedOptions.classList.remove('hidden');
+                document.getElementById('show-advanced').textContent = 'Hide Advanced Options';
+            } else {
+                advancedOptions.classList.add('hidden');
+                document.getElementById('show-advanced').textContent = 'Show Advanced Options';
+            }
+        });
+
+        // API handling functions
+        let currentCursor = null;
+        let currentPage = 1;
+
+        function formatDateTime(isoString) {
+            if (!isoString) return 'N/A';
+            const date = new Date(isoString);
+            return date.toLocaleString();
+        }
+
+        function getStatusClass(tag) {
+            switch(tag) {
+                case 'Delivered': return 'status-delivered';
+                case 'InTransit': 
+                case 'OutForDelivery': return 'status-transit';
+                case 'Exception':
+                case 'AttemptFail': return 'status-exception';
+                default: return 'status-pending';
+            }
+        }
+
+        async function makeApiRequest(endpoint, method = 'GET', data = null) {
+            const apiKey = document.getElementById('apiKey').value;
+            if (!apiKey) {
+                alert('Please enter your AfterShip API key');
+                return null;
+            }
+
+            try {
+                console.log(`Making ${method} request to: /api${endpoint}`);
+                
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'as-api-key': apiKey
+                    }
+                };
+
+                if (data && (method === 'POST' || method === 'PUT')) {
+                    options.body = JSON.stringify(data);
+                }
+
+                // Use absolute URL to the proxy server
+                const proxyUrl = 'http://localhost:3000';
+                const response = await fetch(`${proxyUrl}/api${endpoint}`, options);
+                
+                // Debug response before parsing
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries([...response.headers.entries()]));
+                
+                // Check content type to avoid JSON parsing errors
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Received non-JSON response:', text);
+                    throw new Error('Received non-JSON response from server');
+                }
+                
+                const result = await response.json();
+                console.log('API response data:', result);
+                
+                if (response.status >= 400) {
+                    throw new Error(result.error?.message || result.meta?.message || 'API request failed');
+                }
+                
+                return result;
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+                console.error('API Error:', error);
+                return null;
+            }
+        }
+
+        // Single tracking form
+        document.getElementById('single-tracking-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const trackingNumber = document.getElementById('tracking-number').value;
+            const courier = document.getElementById('courier').value;
+            
+            let endpoint = `/trackings/${trackingNumber}`;
+            if (courier) {
+                endpoint = `/trackings/${courier}/${trackingNumber}`;
+            }
+            
+            const result = await makeApiRequest(endpoint);
+            if (!result) return;
+            
+            const resultElement = document.getElementById('single-result');
+            resultElement.classList.remove('hidden');
+            
+            const tracking = result.data.tracking;
+            let html = `
+                <div class="tracking-item">
+                    <div class="tracking-title">${tracking.tracking_number}</div>
+                    <div class="tracking-info">
+                        <div class="tracking-detail"><strong>Courier:</strong> ${tracking.slug}</div>
+                        <div class="tracking-detail"><strong>Last Updated:</strong> ${formatDateTime(tracking.updated_at)}</div>
+                        <div class="tracking-detail"><strong>Created:</strong> ${formatDateTime(tracking.created_at)}</div>
+                    </div>
+                    <div class="tracking-status ${getStatusClass(tracking.tag)}">${tracking.tag}</div>
+                    
+                    <h3>Tracking History</h3>
+            `;
+            
+            if (tracking.checkpoints && tracking.checkpoints.length > 0) {
+                tracking.checkpoints.forEach(checkpoint => {
+                    html += `
+                        <div class="checkpoint">
+                            <div class="checkpoint-date">${formatDateTime(checkpoint.checkpoint_time)}</div>
+                            <div>${checkpoint.message}</div>
+                            <div><strong>Location:</strong> ${checkpoint.location || 'N/A'}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p>No tracking history available yet.</p>';
+            }
+            
+            html += '</div>';
+            resultElement.innerHTML = html;
+        });
+
+        // Multiple tracking form
+        document.getElementById('multiple-tracking-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            currentCursor = null;
+            currentPage = 1;
+            await fetchMultipleTrackings();
+        });
+
+        async function fetchMultipleTrackings() {
+            const trackingNumbers = document.getElementById('tracking-numbers').value;
+            const limit = document.getElementById('limit').value;
+            const tag = document.getElementById('tag').value;
+            const origin = document.getElementById('origin').value;
+            const destination = document.getElementById('destination').value;
+            const courierFilter = document.getElementById('courier-filter').value;
+            const createdAfter = document.getElementById('created-after').value;
+            const createdBefore = document.getElementById('created-before').value;
+            const keyword = document.getElementById('keyword').value;
+            
+            // Fields to include
+            const fields = [];
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+                fields.push(checkbox.value);
+            });
+            
+            // Build query parameters
+            let queryParams = `?limit=${limit}`;
+            if (trackingNumbers) queryParams += `&tracking_numbers=${trackingNumbers}`;
+            if (tag) queryParams += `&tag=${tag}`;
+            if (origin) queryParams += `&origin=${origin}`;
+            if (destination) queryParams += `&destination=${destination}`;
+            if (courierFilter) queryParams += `&slug=${courierFilter}`;
+            if (fields.length > 0) queryParams += `&fields=${fields.join(',')}`;
+            if (keyword) queryParams += `&keyword=${encodeURIComponent(keyword)}`;
+            if (currentCursor) queryParams += `&cursor=${currentCursor}`;
+            
+            // Format dates
+            if (createdAfter) {
+                const date = new Date(createdAfter);
+                queryParams += `&created_at_min=${encodeURIComponent(date.toISOString())}`;
+            }
+            if (createdBefore) {
+                const date = new Date(createdBefore);
+                queryParams += `&created_at_max=${encodeURIComponent(date.toISOString())}`;
+            }
+            
+            const result = await makeApiRequest(`/trackings${queryParams}`);
+            if (!result) return;
+            
+            const resultElement = document.getElementById('multiple-result');
+            resultElement.classList.remove('hidden');
+            
+            const trackingsElement = document.getElementById('trackings-list');
+            let html = '';
+            
+            if (result.data.trackings.length === 0) {
+                html = '<p>No trackings found matching your criteria.</p>';
+            } else {
+                result.data.trackings.forEach(tracking => {
+                    html += `
+                        <div class="tracking-item">
+                            <div class="tracking-title">${tracking.tracking_number}</div>
+                            <div class="tracking-info">
+                                <div class="tracking-detail"><strong>Courier:</strong> ${tracking.slug}</div>
+                                <div class="tracking-detail"><strong>Last Updated:</strong> ${formatDateTime(tracking.updated_at)}</div>
+                                <div class="tracking-status ${getStatusClass(tracking.tag)}">${tracking.tag}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            trackingsElement.innerHTML = html;
+            
+            // Update pagination
+            document.getElementById('page-info').textContent = `Page ${currentPage}`;
+            document.getElementById('prev-page').disabled = currentPage === 1;
+            document.getElementById('next-page').disabled = !result.data.pagination?.next_cursor;
+            
+            // Save cursor for next page
+            if (result.data.pagination) {
+                currentCursor = result.data.pagination.next_cursor;
+            }
+        }
+
+        // Pagination handlers
+        document.getElementById('prev-page').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                currentCursor = null; // Reset cursor to fetch from the beginning
+                fetchMultipleTrackings();
+            }
+        });
+        
+        document.getElementById('next-page').addEventListener('click', () => {
+            currentPage++;
+            fetchMultipleTrackings();
+        });
+
+        // Create tracking form
+        document.getElementById('create-tracking-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const trackingNumber = document.getElementById('new-tracking-number').value;
+            const courier = document.getElementById('new-courier').value;
+            const title = document.getElementById('title').value;
+            const orderId = document.getElementById('order-id').value;
+            const customerName = document.getElementById('customer-name').value;
+            const originCountry = document.getElementById('origin-country').value;
+            const destinationCountry = document.getElementById('destination-country').value;
+            
+            const payload = {
+                tracking: {
+                    tracking_number: trackingNumber,
+                    slug: courier
+                }
+            };
+            
+            if (title) payload.tracking.title = title;
+            if (orderId) payload.tracking.order_id = orderId;
+            if (customerName) {
+                payload.tracking.customer_name = customerName;
+            }
+            if (originCountry) payload.tracking.origin_country_iso3 = originCountry;
+            if (destinationCountry) payload.tracking.destination_country_iso3 = destinationCountry;
+            
+            const result = await makeApiRequest('/trackings', 'POST', payload);
+            if (!result) return;
+            
+            const resultElement = document.getElementById('create-result');
+            resultElement.classList.remove('hidden');
+            resultElement.innerHTML = `
+                <div class="tracking-item">
+                    <h3>Tracking Created Successfully</h3>
+                    <div class="tracking-info">
+                        <div class="tracking-detail"><strong>Tracking Number:</strong> ${result.data.tracking.tracking_number}</div>
+                        <div class="tracking-detail"><strong>Courier:</strong> ${result.data.tracking.slug}</div>
+                        <div class="tracking-detail"><strong>Created At:</strong> ${formatDateTime(result.data.tracking.created_at)}</div>
+                    </div>
+                </div>
+            `;
+        });
+    </script>
+</body>
 </html>
