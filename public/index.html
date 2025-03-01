@@ -1,0 +1,970 @@
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nova Poshta Tracking</title>
+    <style>
+      :root {
+        --nova-red: #ed1c24;
+        --nova-red-dark: #d01920;
+        --nova-bg: #f5f5f5;
+        --nova-text: #333333;
+        --nova-border: #e5e7eb;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      }
+
+      body {
+        background-color: var(--nova-bg);
+        color: var(--nova-text);
+        line-height: 1.6;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+        border-top: 4px solid var(--nova-red);
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+
+      .logo {
+        height: 40px;
+        margin-right: 16px;
+      }
+
+      .header-text {
+        flex: 1;
+      }
+
+      .title {
+        font-size: 24px;
+        font-weight: bold;
+        color: var(--nova-text);
+        margin-bottom: 4px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        color: #666;
+      }
+
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 4px;
+        color: #555;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--nova-border);
+        border-radius: 4px;
+        font-size: 16px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: var(--nova-red);
+        box-shadow: 0 0 0 3px rgba(237, 28, 36, 0.25);
+        outline: none;
+      }
+
+      .help-text {
+        font-size: 12px;
+        color: #777;
+        margin-top: 4px;
+      }
+
+      .required {
+        color: var(--nova-red);
+      }
+
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 12px 16px;
+        background-color: var(--nova-red);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        text-align: center;
+      }
+
+      .btn:hover {
+        background-color: var(--nova-red-dark);
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-secondary {
+        background-color: #e5e7eb;
+        color: #4b5563;
+        font-size: 14px;
+        padding: 6px 12px;
+      }
+
+      .btn-secondary:hover {
+        background-color: #d1d5db;
+      }
+
+      .results {
+        background-color: #f9fafb;
+        border: 1px solid var(--nova-border);
+        border-radius: 8px;
+        padding: 24px;
+      }
+
+      .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .tracking-number {
+        display: inline-block;
+        background-color: #ffebec;
+        color: var(--nova-red);
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-weight: 600;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-weight: 500;
+      }
+
+      .status-InTransit {
+        background-color: #fef3c7;
+        color: #92400e;
+      }
+
+      .status-Delivered {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+
+      .status-InfoReceived {
+        background-color: #dbeafe;
+        color: #1e40af;
+      }
+
+      .status-Exception {
+        background-color: #fee2e2;
+        color: #b91c1c;
+      }
+
+      .status-Pending {
+        background-color: #e5e7eb;
+        color: #4b5563;
+      }
+
+      .status-OutForDelivery {
+        background-color: #c7d2fe;
+        color: #3730a3;
+      }
+
+      .status-AvailableForPickup {
+        background-color: #a7f3d0;
+        color: #065f46;
+      }
+
+      .section-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: #6b7280;
+        margin-bottom: 4px;
+      }
+
+      .section-content {
+        font-size: 16px;
+        color: var(--nova-text);
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin: 20px 0;
+      }
+
+      @media (min-width: 640px) {
+        .info-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .info-card {
+        background-color: white;
+        border: 1px solid var(--nova-border);
+        border-radius: 6px;
+        padding: 16px;
+      }
+
+      .checkpoints {
+        margin-top: 24px;
+        border-top: 1px solid var(--nova-border);
+        padding-top: 20px;
+      }
+
+      .checkpoint {
+        position: relative;
+        padding-left: 20px;
+        padding-bottom: 20px;
+        border-left: 2px solid #d1d5db;
+      }
+
+      .checkpoint:last-child {
+        border-left: 2px solid transparent;
+      }
+
+      .checkpoint-dot {
+        position: absolute;
+        left: -6px;
+        top: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--nova-red);
+      }
+
+      .checkpoint-content {
+        padding-left: 16px;
+      }
+
+      .checkpoint-time {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 4px;
+      }
+
+      .checkpoint-message {
+        font-size: 14px;
+        color: var(--nova-text);
+        margin-bottom: 4px;
+      }
+
+      .checkpoint-location {
+        font-size: 14px;
+        color: #4b5563;
+      }
+
+      .error {
+        margin-top: 16px;
+        padding: 12px;
+        background-color: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+        border-radius: 4px;
+      }
+
+      .footer {
+        margin-top: 32px;
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .api-info {
+        margin-top: 12px;
+        padding: 12px;
+        background-color: #f3f4f6;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+
+      .api-badge {
+        display: inline-block;
+        padding: 2px 6px;
+        background-color: #e5e7eb;
+        border-radius: 4px;
+        font-family: monospace;
+      }
+
+      .language-toggle {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 16px;
+      }
+
+      .language-btn {
+        background: none;
+        border: none;
+        padding: 4px 8px;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 14px;
+        margin-left: 8px;
+      }
+
+      .language-btn.active {
+        font-weight: bold;
+        color: var(--nova-red);
+        text-decoration: underline;
+      }
+
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 8px;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .raw-response {
+        margin-top: 24px;
+        padding: 16px;
+        background-color: #f3f4f6;
+        border-radius: 4px;
+        overflow: auto;
+        max-height: 300px;
+      }
+
+      .raw-response pre {
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
+
+      .raw-toggle {
+        cursor: pointer;
+        color: #6366f1;
+        text-decoration: underline;
+        font-size: 14px;
+        margin-top: 12px;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="language-toggle">
+        <button class="language-btn active" data-lang="uk">Українська</button>
+        <button class="language-btn" data-lang="en">English</button>
+      </div>
+
+      <div class="header">
+        <img
+          class="logo"
+          src="https://upload.wikimedia.org/wikipedia/commons/1/10/Nova_Poshta_logo.svg"
+          alt="Nova Poshta"
+        />
+        <div class="header-text">
+          <h1
+            class="title"
+            data-uk="Відстеження посилок Нової Пошти"
+            data-en="Nova Poshta Tracking"
+          >
+            Відстеження посилок Нової Пошти
+          </h1>
+          <p
+            class="subtitle"
+            data-uk="За допомогою AfterShip API"
+            data-en="Powered by AfterShip API"
+          >
+            За допомогою AfterShip API
+          </p>
+        </div>
+      </div>
+
+      <!-- Tracking Form -->
+      <div id="trackingForm">
+        <form id="parcelForm">
+          <div class="form-group">
+            <label
+              for="trackingNumber"
+              data-uk="Номер накладної"
+              data-en="Tracking Number"
+            >
+              <span data-uk="Номер накладної" data-en="Tracking Number"
+                >Номер накладної</span
+              >
+              <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="trackingNumber"
+              name="trackingNumber"
+              value="NP20000003841275NPG"
+              required
+            />
+            <p
+              class="help-text"
+              data-uk="Введіть номер накладної Нової Пошти"
+              data-en="Enter your Nova Poshta tracking number"
+            >
+              Введіть номер накладної Нової Пошти
+            </p>
+          </div>
+
+          <div class="api-info">
+            <span class="api-badge">GET</span>
+            <span data-uk="API Endpoint:" data-en="API Endpoint:"
+              >API Endpoint:</span
+            >
+            <code>/api/track?trackingNumber=NP20000003841275NPG</code>
+          </div>
+
+          <div class="form-group" style="padding-top: 8px">
+            <button
+              type="submit"
+              id="submitButton"
+              class="btn"
+              data-uk="Відстежити посилку"
+              data-en="Track Parcel"
+            >
+              <span
+                id="submitButtonText"
+                data-uk="Відстежити посилку"
+                data-en="Track Parcel"
+                >Відстежити посилку</span
+              >
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tracking Results (initially hidden) -->
+      <div id="trackingResults" class="results hidden">
+        <div class="results-header">
+          <div>
+            <h2
+              class="section-title"
+              data-uk="Номер накладної"
+              data-en="Tracking Number"
+            >
+              Номер накладної
+            </h2>
+            <div class="tracking-number" id="resultTrackingNumber"></div>
+          </div>
+          <button
+            id="trackAnotherBtn"
+            class="btn-secondary"
+            data-uk="Відстежити іншу посилку"
+            data-en="Track Another Parcel"
+          >
+            Відстежити іншу посилку
+          </button>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <h3 class="section-title" data-uk="Статус" data-en="Status">
+              Статус
+            </h3>
+            <div class="section-content">
+              <span id="statusDisplay" class="status-badge"></span>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <h3
+              class="section-title"
+              data-uk="Очікувана дата доставки"
+              data-en="Expected Delivery"
+            >
+              Очікувана дата доставки
+            </h3>
+            <p id="deliveryDateDisplay" class="section-content">-</p>
+          </div>
+
+          <div class="info-card">
+            <h3 class="section-title" data-uk="Відправник" data-en="Sender">
+              Відправник
+            </h3>
+            <p id="senderDisplay" class="section-content">-</p>
+          </div>
+
+          <div class="info-card">
+            <h3 class="section-title" data-uk="Одержувач" data-en="Recipient">
+              Одержувач
+            </h3>
+            <p id="recipientDisplay" class="section-content">-</p>
+          </div>
+
+          <div class="info-card">
+            <h3 class="section-title" data-uk="Відправлено з" data-en="Origin">
+              Відправлено з
+            </h3>
+            <p id="originDisplay" class="section-content">-</p>
+          </div>
+
+          <div class="info-card">
+            <h3
+              class="section-title"
+              data-uk="Пункт призначення"
+              data-en="Destination"
+            >
+              Пункт призначення
+            </h3>
+            <p id="destinationDisplay" class="section-content">-</p>
+          </div>
+        </div>
+
+        <div class="checkpoints">
+          <h3
+            class="section-title"
+            data-uk="Історія доставки"
+            data-en="Delivery History"
+          >
+            Історія доставки
+          </h3>
+
+          <div id="checkpointsContainer">
+            <!-- Checkpoints will be dynamically populated here -->
+          </div>
+        </div>
+
+        <a
+          href="#"
+          class="raw-toggle"
+          id="toggleRawResponse"
+          data-uk="Показати повну відповідь API"
+          data-en="Show Raw API Response"
+          >Показати повну відповідь API</a
+        >
+        <div id="rawResponse" class="raw-response hidden">
+          <pre id="rawResponseContent"></pre>
+        </div>
+      </div>
+
+      <!-- Error Message (initially hidden) -->
+      <div id="errorMessage" class="error hidden"></div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <p
+          data-uk="Сервіс використовує AfterShip API для відстеження посилок Нової Пошти"
+          data-en="This service uses AfterShip API to track Nova Poshta parcels"
+        >
+          Сервіс використовує AfterShip API для відстеження посилок Нової Пошти
+        </p>
+        <p
+          data-uk="Офіційний сайт Нової Пошти:"
+          data-en="Official Nova Poshta website:"
+        >
+          Офіційний сайт Нової Пошти:
+          <a href="https://novaposhta.ua" target="_blank">novaposhta.ua</a>
+        </p>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // DOM elements
+        const trackingForm = document.getElementById("trackingForm");
+        const trackingResults = document.getElementById("trackingResults");
+        const errorMessage = document.getElementById("errorMessage");
+        const parcelForm = document.getElementById("parcelForm");
+        const submitButton = document.getElementById("submitButton");
+        const submitButtonText = document.getElementById("submitButtonText");
+        const trackAnotherBtn = document.getElementById("trackAnotherBtn");
+        const languageButtons = document.querySelectorAll(".language-btn");
+        const toggleRawResponse = document.getElementById("toggleRawResponse");
+        const rawResponse = document.getElementById("rawResponse");
+        const rawResponseContent =
+          document.getElementById("rawResponseContent");
+
+        // Form fields
+        const trackingNumberInput = document.getElementById("trackingNumber");
+
+        // Result displays
+        const resultTrackingNumber = document.getElementById(
+          "resultTrackingNumber"
+        );
+        const statusDisplay = document.getElementById("statusDisplay");
+        const deliveryDateDisplay = document.getElementById(
+          "deliveryDateDisplay"
+        );
+        const senderDisplay = document.getElementById("senderDisplay");
+        const recipientDisplay = document.getElementById("recipientDisplay");
+        const originDisplay = document.getElementById("originDisplay");
+        const destinationDisplay =
+          document.getElementById("destinationDisplay");
+        const checkpointsContainer = document.getElementById(
+          "checkpointsContainer"
+        );
+
+        // Language handling
+        let currentLanguage = "uk";
+
+        languageButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const lang = this.getAttribute("data-lang");
+            setLanguage(lang);
+
+            // Update active button
+            languageButtons.forEach((btn) => btn.classList.remove("active"));
+            this.classList.add("active");
+          });
+        });
+
+        function setLanguage(lang) {
+          currentLanguage = lang;
+
+          document.querySelectorAll("[data-uk], [data-en]").forEach((el) => {
+            if (el.hasAttribute(`data-${lang}`)) {
+              // For inputs with placeholder
+              if (el.hasAttribute("placeholder")) {
+                el.placeholder = el.getAttribute(`data-${lang}`);
+              } else {
+                el.textContent = el.getAttribute(`data-${lang}`);
+              }
+            }
+          });
+        }
+
+        // Toggle raw response
+        toggleRawResponse.addEventListener("click", function (e) {
+          e.preventDefault();
+          rawResponse.classList.toggle("hidden");
+
+          if (rawResponse.classList.contains("hidden")) {
+            toggleRawResponse.textContent =
+              currentLanguage === "uk"
+                ? "Показати повну відповідь API"
+                : "Show Raw API Response";
+          } else {
+            toggleRawResponse.textContent =
+              currentLanguage === "uk"
+                ? "Приховати повну відповідь API"
+                : "Hide Raw API Response";
+          }
+        });
+
+        // Form submission handler
+        parcelForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          // Hide any previous error and raw response
+          errorMessage.classList.add("hidden");
+          rawResponse.classList.add("hidden");
+          toggleRawResponse.textContent =
+            currentLanguage === "uk"
+              ? "Показати повну відповідь API"
+              : "Show Raw API Response";
+
+          // Get form values
+          const trackingNumber = trackingNumberInput.value.trim();
+
+          // Validate inputs
+          if (!trackingNumber) {
+            const errorMsg =
+              currentLanguage === "uk"
+                ? "Будь ласка, введіть номер накладної"
+                : "Please enter a tracking number";
+            showError(errorMsg);
+            return;
+          }
+
+          // Show loading state
+          submitButton.disabled = true;
+          submitButtonText.innerHTML = `<span class="spinner"></span> ${
+            currentLanguage === "uk" ? "Завантаження..." : "Loading..."
+          }`;
+
+          try {
+            // Make API call to our backend proxy
+            const response = await fetch(
+              `/api/track?trackingNumber=${encodeURIComponent(trackingNumber)}`
+            );
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+              throw new Error(result.error || "Failed to track package");
+            }
+
+            // Save raw response for debugging
+            rawResponseContent.textContent = JSON.stringify(
+              result.data,
+              null,
+              2
+            );
+
+            // Display results
+            displayResults(result.data);
+          } catch (error) {
+            showError(
+              error.message ||
+                (currentLanguage === "uk"
+                  ? "Виникла помилка під час відстеження вашої посилки"
+                  : "An error occurred while tracking your parcel")
+            );
+          } finally {
+            // Reset button state
+            submitButton.disabled = false;
+            submitButtonText.innerHTML =
+              currentLanguage === "uk" ? "Відстежити посилку" : "Track Parcel";
+          }
+        });
+
+        // Track another button handler
+        trackAnotherBtn.addEventListener("click", function () {
+          resetForm();
+        });
+
+        // Function to display tracking results
+        function displayResults(response) {
+          // Extract tracking data from response
+          const tracking = response.data?.tracking;
+
+          if (!tracking) {
+            showError(
+              currentLanguage === "uk"
+                ? "Не вдалося отримати дані відстеження"
+                : "Could not retrieve tracking data"
+            );
+            return;
+          }
+
+          // Update tracking number
+          resultTrackingNumber.textContent = tracking.tracking_number;
+
+          // Update status
+          const statusText = getStatusText(tracking.tag);
+          statusDisplay.textContent = statusText;
+          statusDisplay.className = `status-badge status-${
+            tracking.tag || "Pending"
+          }`;
+
+          // Update expected delivery
+          if (tracking.expected_delivery) {
+            const formattedDate = formatDate(tracking.expected_delivery);
+            deliveryDateDisplay.textContent = formattedDate;
+          } else {
+            deliveryDateDisplay.textContent =
+              currentLanguage === "uk" ? "Не вказано" : "Not specified";
+          }
+
+          // Update custom fields if available
+          if (tracking.custom_fields) {
+            senderDisplay.textContent =
+              tracking.custom_fields.sender_name || "-";
+            recipientDisplay.textContent =
+              tracking.custom_fields.recipient_name || "-";
+            originDisplay.textContent =
+              tracking.custom_fields.origin_branch || "-";
+            destinationDisplay.textContent =
+              tracking.custom_fields.destination_branch || "-";
+          } else {
+            // Use title or order_id if available
+            senderDisplay.textContent = "-";
+            recipientDisplay.textContent = "-";
+            originDisplay.textContent = tracking.origin_country_iso3 || "-";
+            destinationDisplay.textContent =
+              tracking.destination_country_iso3 || "-";
+          }
+
+          // Update checkpoints
+          checkpointsContainer.innerHTML = "";
+
+          if (tracking.checkpoints && tracking.checkpoints.length > 0) {
+            // Sort checkpoints by time (newest first)
+            const sortedCheckpoints = [...tracking.checkpoints].sort(
+              (a, b) =>
+                new Date(b.checkpoint_time || b.created_at) -
+                new Date(a.checkpoint_time || a.created_at)
+            );
+
+            sortedCheckpoints.forEach((checkpoint) => {
+              const checkpointEl = createCheckpointElement(checkpoint);
+              checkpointsContainer.appendChild(checkpointEl);
+            });
+          } else {
+            // No checkpoints
+            const noCheckpoints = document.createElement("p");
+            noCheckpoints.className = "section-content";
+            noCheckpoints.textContent =
+              currentLanguage === "uk"
+                ? "Немає доступної історії відстеження"
+                : "No tracking history available";
+            checkpointsContainer.appendChild(noCheckpoints);
+          }
+
+          // Hide form and show results
+          trackingForm.classList.add("hidden");
+          trackingResults.classList.remove("hidden");
+        }
+
+        // Function to create a checkpoint element
+        function createCheckpointElement(checkpoint) {
+          const checkpointDiv = document.createElement("div");
+          checkpointDiv.className = "checkpoint";
+
+          const dot = document.createElement("div");
+          dot.className = "checkpoint-dot";
+
+          const content = document.createElement("div");
+          content.className = "checkpoint-content";
+
+          const time = document.createElement("div");
+          time.className = "checkpoint-time";
+          time.textContent = formatDateTime(
+            checkpoint.checkpoint_time || checkpoint.created_at
+          );
+
+          const message = document.createElement("div");
+          message.className = "checkpoint-message";
+          message.textContent =
+            checkpoint.message || getStatusText(checkpoint.tag);
+
+          const location = document.createElement("div");
+          location.className = "checkpoint-location";
+          const locationText = [];
+          if (checkpoint.location) locationText.push(checkpoint.location);
+          if (checkpoint.city) locationText.push(checkpoint.city);
+          if (checkpoint.country_name)
+            locationText.push(checkpoint.country_name);
+
+          location.textContent =
+            locationText.length > 0 ? locationText.join(", ") : "-";
+
+          content.appendChild(time);
+          content.appendChild(message);
+          content.appendChild(location);
+
+          checkpointDiv.appendChild(dot);
+          checkpointDiv.appendChild(content);
+
+          return checkpointDiv;
+        }
+
+        // Function to show error message
+        function showError(message) {
+          errorMessage.textContent = message;
+          errorMessage.classList.remove("hidden");
+        }
+
+        // Function to reset the form
+        function resetForm() {
+          // Hide results and error, show form
+          trackingResults.classList.add("hidden");
+          errorMessage.classList.add("hidden");
+          rawResponse.classList.add("hidden");
+          trackingForm.classList.remove("hidden");
+        }
+
+        // Helper function to format date
+        function formatDate(dateString) {
+          if (!dateString) return "-";
+          try {
+            const date = new Date(dateString);
+            return `${String(date.getDate()).padStart(
+              2,
+              "0"
+            )}.${String(date.getMonth() + 1).padStart(2, "0")}.${date.getFullYear()}`;
+          } catch (e) {
+            return dateString;
+          }
+        }
+
+        // Helper function to format date and time
+        function formatDateTime(dateTimeString) {
+          if (!dateTimeString) return "-";
+          try {
+            const date = new Date(dateTimeString);
+            return `${String(date.getDate()).padStart(
+              2,
+              "0"
+            )}.${String(date.getMonth() + 1).padStart(2, "0")}.${date.getFullYear()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+          } catch (e) {
+            return dateTimeString;
+          }
+        }
+
+        // Helper function to get status text based on tag
+        function getStatusText(tag) {
+          if (!tag) return currentLanguage === "uk" ? "Невідомо" : "Unknown";
+
+          const statusTexts = {
+            uk: {
+              Pending: "Очікує",
+              InfoReceived: "Інформацію одержано",
+              InTransit: "У дорозі",
+              OutForDelivery: "Прямує до відділення",
+              AttemptFail: "Невдала спроба доставки",
+              Delivered: "Доставлено",
+              AvailableForPickup: "Готово до видачі",
+              Exception: "Виняткова ситуація",
+              Expired: "Прострочено",
+            },
+            en: {
+              Pending: "Pending",
+              InfoReceived: "Information Received",
+              InTransit: "In Transit",
+              OutForDelivery: "Out For Delivery",
+              AttemptFail: "Attempt Failed",
+              Delivered: "Delivered",
+              AvailableForPickup: "Available For Pickup",
+              Exception: "Exception",
+              Expired: "Expired",
+            },
+          };
+
+          return statusTexts[currentLanguage][tag] || tag;
+        }
+
+        // Auto-submit the form if tracking number is pre-filled
+        if (trackingNumberInput.value.trim()) {
+          setTimeout(() => {
+            if (
+              confirm(
+                currentLanguage === "uk"
+                  ? "Автоматично відстежити посилку з введеним номером?"
+                  : "Automatically track the pre-filled tracking number?"
+              )
+            ) {
+              submitButton.click();
+            }
+          }, 1000);
+        }
+      });
+    </script>
+  </body>
+</html>
